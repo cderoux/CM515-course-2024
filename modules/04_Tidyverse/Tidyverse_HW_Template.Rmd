@@ -1,12 +1,12 @@
 ---
 title: "Homework"
-author: "YOUR NAME"
+author: "Chris deRoux"
 output: html_document
 date: "2024-02-12"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
 #### Load libraries
@@ -28,26 +28,28 @@ surveys <- read_csv("diversity.csv")
 
 ```{r}
 #Q1
-
+class(surveys)
 ```
-
+data.frame
 
 #### Q2: How many rows and how many columns are in the object?
 
-Rows: 
-Columns:
+Rows: 34786
+Columns: 13
 
 #### Q2: Create a data.frame (surveys_200) containing only the data in row 200 of the surveys dataset.
 
 ```{r}
 #Q2
+surveys_200 <- surveys[200,]
 
 ```
 
-#### Q3: Create a data.fram (surveys_last) containing only the data in row 200 of the surveys dataset using nrow() instead of the row number. 
+#### Q3: Create a data.frame (surveys_last) containing only the data in row 200 of the surveys dataset using nrow() instead of the row number. 
 
 ```{r}
 #Q3
+surveys_last <- surveys[nrow(surveys),]
 
 ```
 
@@ -55,6 +57,8 @@ Columns:
 
 ```{r}
 #Q4
+surveys$taxa <- factor(surveys$taxa)
+surveys$genus <- factor(surveys$genus)
 
 ```
 
@@ -64,28 +68,38 @@ Columns:
 
 ```{r}
 #Q5A
+summary(surveys$taxa)
 
 ```
-
+75
 
 ##### Q5 B: How many different genera are in the genus column?
 
 ```{r}
 #Q5B
+str(surveys$genus)
 
 ```
+26
 
 #### Q6: Create new variable 'sex' by converting surveys$sex to a factor. Use addNA to add a factor level to 'sex' variable. Using the 'sex' variable, rename "NA", "F", and "M" factors to "undetermined", "female", and "male" respectively. Plot sex variable. 
 
 ```{r}
 #Q6
-
+sex <- surveys$sex
+sex <- addNA(sex)
+levels(sex)[3] <- "undetermined"
+levels(sex)[2] <- "female"
+levels(sex)[1] <- "male"
+plot(sex)
 ```
 
 #### Q7: Recreate the barplot such that "undetermined" is first (before "female").
 
 ```{r}
 #Q7
+sex <- factor(sex, levels = c("undetermined", "female", "male"))
+plot(sex)
 
 ```
 
@@ -93,8 +107,10 @@ Columns:
 
 ```{r}
 #Q8
-
+yearOnly <- filter(surveys, surveys$year < 1995)
+tail(yearOnly)
 ```
+
 
 ### Tidyverse Day 2
 
@@ -108,6 +124,11 @@ Columns:
 
 ```{r}
 #Q9 
+surveys %>%
+  mutate(hindfoot_cm = hindfoot_length/100) %>%
+  select(species_id, hindfoot_cm) %>%
+  filter(!is.na(hindfoot_cm)) %>%
+  head()
 
 ```
 
@@ -115,6 +136,8 @@ Columns:
 
 ```{r}
 #Q10
+surveys %>%
+  count(plot_type)
 
 ```
 
@@ -122,6 +145,10 @@ Columns:
 
 ```{r}
 #Q11
+surveys %>% 
+  group_by(species_id) %>% 
+  filter(!is.na(hindfoot_length)) %>%
+  summarise(meanHindfoot = mean(hindfoot_length), minHindfoot = min(hindfoot_length), maxHindfoot = max(hindfoot_length), n = n()) 
 
 ```
 
@@ -130,6 +157,13 @@ Columns:
 ```{r}
 #Q12
 
+surveys %>% 
+  group_by(year) %>% 
+  filter(!is.na(weight)) %>%
+  #summarise(weightMax = max(weight)) 
+  filter(weight == max(weight)) %>% 
+  select(weight, year, genus, species_id)
+  
 ```
 
 #### Q13: Reshape the surveys data frame with year as columns, plot_id as rows, and the number of genera per plot as the values. You will need to summarize before reshaping, and use the function n_distinct() to get the number of unique genera within a particular chunk of data. It’s a powerful function! See ?n_distinct for more.
@@ -137,12 +171,32 @@ Columns:
 ```{r}
 #Q13
 
+surveys %>%
+  select(plot_id, genus, year) %>%
+  group_by(plot_id, year) %>%
+  mutate(generaPerPlotN = n_distinct(genus)) %>% 
+  filter(!is.na(generaPerPlotN)) %>%
+  select(plot_id, year, generaPerPlotN) %>% 
+  pivot_wider(names_from = year, values_from = generaPerPlotN) %>% 
+  arrange(plot_id)
+
+
 ```
 
 #### Q14: Now take that data frame and pivot_longer() it, so each row is a unique plot_id by year combination.
 
 ```{r}
 #Q14
+
+surveys %>%
+  select(plot_id, genus, year) %>%
+  group_by(plot_id, year) %>%
+  mutate(generaPerPlotN = n_distinct(genus)) %>% 
+  filter(!is.na(generaPerPlotN)) %>%
+  select(plot_id, year, generaPerPlotN) %>% 
+  pivot_wider(names_from = "year", values_from = "generaPerPlotN") %>% 
+  arrange(plot_id) %>% 
+  pivot_longer(names_to = "year", values_to = "generaPerPlotN", cols = -plot_id)
 
 ```
 

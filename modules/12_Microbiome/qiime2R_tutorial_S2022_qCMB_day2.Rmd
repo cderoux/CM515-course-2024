@@ -1,13 +1,73 @@
 ---
 title: "qiime2R_tutorial_S2022_qCMB_day2"
-author: "Heather Deel"
-date: '2022-04-22'
+author: "Chris deRoux"
+date: '2024-04-17'
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
+
+1.  Compare and contrast Metagenomics vs amplicon sequencing, and list a benefit and drawback of each one.
+
+Metagenomics involves shotgun sequencing a microbiome sample, ragerdless of the presence/absence of genetic markers, while amplicon sequencing only amplifies a shared genetic marker with conserved and variable regions. 
+Metagenomics can sequence microbiome organisms from across the tree of life, while amplicon sequencing relies on shared genes within clades. Metagenomics relies on collecting more data, as taxonomy and sequence similarity are more difficult to discern from sporadic shotgun sequencing. This makes it monetarily and computationally costly.
+Amplicon sequencing is cheaper, only sequencing a known gene with conserved and variable sequences, lending itself well to reconstructing phylogenies with as little data as possible. As stated above, amplicon sequencing depends on genes shared between all members of a microbiome community, restricting taxon sampling. 
+
+2.  Look at the "print_provenance(SVs)" output. What was the sequencing platform (Single End or Paired End)?
+
+Single End.
+
+3.  What components are included in metadata and why is detailed and robust metadata important?
+
+Metadata includes data about the data used for analyses in a study. It can include descriptions of data, data provenance, details about data processing, names of people involved, copyright information, and quality metrics for data. Robust metadata provides crucial context for collected data, allowing other scientists to use or evaluate the data without having to contact the people who collected it and ask them what it means. This improves confidence in data, assists reproducibility, and prevents data loss. 
+
+4.  What is the statistical test for pairwise comparison between the groups in the plots?
+
+A Wilcoxon rank sum test.
+
+5.  Which comparisons were statistically significant from Shannon's alpha diversity?
+
+The Shannon entropy between donor groups was statistically significant, with a p-value of .000069 using the Kruskal-Wallis test. 
+
+Using Wilcoxon, the following comparisons were significant:
+Susceptible and PD - susceptible and Healthy
+wild type and PD - susceptible and Healthy
+wild type and Healthy - susceptible and PD
+wild type and PD - susceptible and PD
+
+3 of four of these significance findings are between groups which differ in terms of fecal transplant donor. 
+
+Day 2 (2 pts each):
+
+6.  What is rarefaction and what are the benefits and drawbacks? 
+
+Rarefaction suppresses the abundance signal from the most abundant species in a microbiome, allowing rarer taxa to not be overpowered. It intentionally distorts the ecology of microbiomes, which results in an inaccurate picture of microbiome function and diversity, inflating rarer and less populous taxa. The benefits of allowing rarer taxa to show up in the dataset may outweigh the drawbacks, as otherwise these members of the community would be ignored or lost. 
+
+7.  What does beta diversity show that alpha diversity doesn't?
+
+Beta diversity shows differences in diversity between groups of samples. It allows for categorical data, like treatment vs control, to explain variance in alpha diversity found within samples. 
+
+8.  What is ANCOM-BC used for and why did we use it in this class? 
+
+ANCOM-BC uses relative abundance of taxa sampled to infer absolute abundances in the population, estimating the impact of sampling bias on the relative abundances of taxa sampled. Not all individuals in a microbiome population can be sequenced, so we wind up with a subset of samples representing a fraction of population diversity. ANCOM-BC corrects for this, allowing abundance comparisons to proceed with data adjusted for sampling fraction. 
+
+9.  Which taxa are differentially abundant between the genotype and donor status groups?
+
+The taxa in the output variable tab_diff which read "TRUE" under the column comparisons are differentially abundant between each genotype and donor combination. 
+
+For simplicity, the differentially abundant taxa between susceptible mice with different donor statuses are Paraprevotella, Bacteroides, Parabacteroides, Alistipes, Cloacibacterium, Turicibacter, Christensenella, Pseudoramibacter, Blautia, Clostridium, Coprococcus, Anaerofilum, Faecalibacterium, Oscillospira, and Ruminococcus.
+
+Between healthy donor treatments and mice with different genotypes, Alistipes, Christensenella, Pseudoramibacter_Eubacterium, Blautia, Anaerofilum, Collinsella, Enterococcus, Ruminococcus, rc4-4, Butyricicoccus, Gemmiger, Holdemania, Sutterella, and Akkermansia are differentially abundant.
+
+10.  What do the taxa_barplots show? (Think relative abundances between samples)
+
+The taxa barplots display the relative abundance of sequenced bacterial genera in each sample, grouped by genotype and donor status. Bacteroides is the most abundant in most samples. As expected based on significance tests, Paraprevotella and Akkermansia have the most apparent abundance differential between fecal transplant treatments. 
+
+Optional feedback: Which aspect of microbiome analysis would you be interested in learning more about?
+I have burning questions about marine invertebrate surface microbiomes. Virases, micro-animals, bacteria, even fungal microbes are just floating around in the continuous ocean, but still localize to the surfaces of animals. How does that work? Are surface microbiomes species-specific? Almost certainly. But I'd like to know. 
+
 
 # As a reminder from the day 1 tutorial, here is our study design:
 ```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
@@ -66,6 +126,8 @@ bray_curtis$data$Vectors %>%
 ```
 What kind of trend, or "clustering" do you see?
 
+The alpha diversities of samples cluster together based on the type of fecal transplant, regardless of the genotype of the mice. Treatment seems to explain more about alpha diversity than genotype does. 
+
 # Let's make PCoA plots for each of the other discussed metrics. We can do these all in one code chunk, and then click the output boxes to see each of the plots.
 ```{r}
 jaccard$data$Vectors %>%
@@ -97,6 +159,8 @@ we_unifrac$data$Vectors %>%
 ```
 What can you say based on the differences in beta diversity patterns between each of the metrics?
 
+Answer: While I haven't performed and statistical tests on these data points, going by eye, it looks like the beta diversity of the samples is high overall, with a lot of variance in principle coordinates (PC) between samples within the same treatment group. Some of this variance between PC is explained by treatment group, with the microbiomes of both Parkinson's Diseased donor treatments having more in common with one another than the healthy donor treatments. PC1 and PC2 seem to be inversely correlated for both treatments, if that makes any sense. 
+
 In QIIME2, you can and should do a PERMANOVA test to add statistical significance to the clustering we see here. Since doing this test is a bit more complicated in R, especially when using distance matrices that were made in QIIME2, we won't do this today. Instead, we will test which features are differentially abundant between our groups of interest. 
 
 We will do this using a tool called ANCOM-BC. In short, ANCOM-BC (https://www.nature.com/articles/s41467-020-17041-7) estimates the unknown sampling fractions and corrects bias induced by their differences among samples. The absolute abundances are then modeled using a linear regression framework. This method provides statistically valid tests with p-values, it provides confidence intervals for the differential abundance of each taxon, and it can control the false discovery rate while also maintaining adequate power. 
@@ -105,11 +169,11 @@ We will do this using a tool called ANCOM-BC. In short, ANCOM-BC (https://www.na
 ```{r}
 # installing ANCOM-BC
 # if R asks to update packages, say all and press enter
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-BiocManager::install("ANCOMBC")
-BiocManager::install("phyloseq")
-BiocManager::install("microbiome")
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#  install.packages("BiocManager")
+#BiocManager::install("ANCOMBC")
+#BiocManager::install("phyloseq")
+#BiocManager::install("microbiome")
 ```
 
 # You can install DT from the CRAN repository.
@@ -125,6 +189,7 @@ library(DT)
 # First, check out ANCOM-BC
 ```{r}
 ?ancombc
+#HMMMMM p or q value? i think ignore the p values and use q, since we're doing multiple tests
 ```
 
 # Re-import our data as a phyloseq object:
@@ -146,7 +211,7 @@ genus_data = aggregate_taxa(physeq, "Genus")
 # Run ANCOM-BC. For simplicity, we will do this only with the donor group (healthy or PD)
 ```{r}
 out = ancombc(phyloseq = genus_data, formula = "genotype_and_donor_status", 
-              p_adj_method = "holm", zero_cut = 0.90, lib_cut = 1000, 
+              p_adj_method = "holm", lib_cut = 1000, 
               group = "genotype_and_donor_status", struc_zero = TRUE, neg_lb = TRUE, tol = 1e-5, 
               max_iter = 100, conserve = TRUE, alpha = 0.05, global = TRUE)
 res = out$res
@@ -155,12 +220,14 @@ res_global = out$res_global
 
 Click on the output res_global. Are there any differentially abundant taxa? From this output, are you able to tell what groups the taxa are differentially abundant between?
 
+Answer: Paraprevotella is differentially abundant with an extremely low q-value. There are many taxa which pass the adjusted Z-test, having similarly low q-values. A few have high q-values, with no significant differences. It is impossible to tell from this file which groups these differences exist between, as differential abundance checks for at least one group which has significant differences. 
+
 # Now that we have run ANCOM-BC, we can look more closely at what taxa are differentially abundant between which groups
 
 # First get the p-values
 ```{r}
 # p-values
-col_name = c("S.Healthy - S.PD","S.Healthy - WT.Healthy","S.Healthy - WT.PD")
+col_name = c("Genus", "S.Healthy - S.PD","S.Healthy - WT.Healthy","S.Healthy - WT.PD", "WT.Healthy - S.PD")
 tab_p = res$p_val
 colnames(tab_p) = col_name
 tab_p %>% datatable(caption = "P-values from the Primary Result") %>%
@@ -183,6 +250,14 @@ tab_diff %>%
 ```
 
 Which taxa are differentially abundant between the genotype and donor status groups?
+
+Assuming I fixed the code right... all of the genera reading "TRUE" are differentially abundant between the specified treatment groups. 
+
+For example, Between susceptible mice treatments, Paraprevotella, Bacteroides, Parabacteroides, Alistipes, Cloacibacterium, Turicibacter, Christensenella, Pseudoramibacter, Blautia, Clostridium, Coprococcus, Anaerofilum, Faecalibacterium, Oscillospira,  and Ruminococcus are differentially abundant. 
+
+Between healthy donor treatments, Alistipes, Christensenella, Pseudoramibacter_Eubacterium, Blautia, Anaerofilum, Collinsella, Enterococcus, Ruminococcus, rc4-4, Butyricicoccus, Gemmiger, Holdemania, Sutterella, and Akkermansia are differentially abundant. 
+
+etc. 
 
 What if we want to see a visualization of all of the taxa within our data set? While there are lots of ways that we can do this, today we will do two. First, we will look at our taxonomic composition for each sample using a taxa bar plot.
 

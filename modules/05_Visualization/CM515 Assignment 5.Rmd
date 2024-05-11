@@ -1,9 +1,7 @@
 ---
 title: "CM515 Assignment 5"
-author: "Your Name"
-output:
-  html_document:
-    df_print: paged
+author: "Chris deRoux"
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -35,6 +33,11 @@ Knit the document into a PDF and submit it to Canvas by 02/28/2024 at 11:59 pm.
 ####
 library(knitr)
 library(tidyverse)
+library(Stat2Data)
+library(ggplot2)
+library(ggthemes)
+library(ggtrace)
+data("Tadpoles")
 
 ```
 
@@ -46,11 +49,17 @@ library(tidyverse)
 
 Description and Interpretation:
 
+Here I plotted body length against intestinal length in healthy vs. chytrid infected tadpoles. These metrics seemed the most sensible since I expected them to be correlated. I color coded the treatment group to show that infected tadpoles clustered around the lowest body and intestinal length. 
+
 ```{r}
 ####
 #01#
 ####
-
+ggplot(data = Tadpoles, aes(x = Body, y = GutLength, color = Treatment)) +
+  geom_point(width = .2, size = 3, aes()) +
+  ylab("Length of Intestine") + xlab("Length of Body") +
+  theme_gdocs() +
+  labs(title = "Plot of Individuals by Health Metrics")
 
 ```
 
@@ -61,12 +70,20 @@ Description and Interpretation:
 *******
 
 Description and Interpretation:
+I kept the same axes as the previous graph, but added a line of code which drew two linear regression lines along the control and chytrid groups. These trend lines are not especially informative, though the y intercept might be an indication of greater overall health in the control tadpoles. 
 
 ```{r}
 ####
 #02#
 ####
 #your code here
+
+ggplot(data = Tadpoles, aes(x = Body, y = GutLength, color = Treatment)) +
+  geom_point(width = .2, size = 3, aes()) +
+  ylab("Length of Intestine") + xlab("Length of Body") +
+  geom_smooth(method = lm, se = FALSE) +
+  labs(title = "Best Fit Lines for Combined Health Metrics") +
+  theme_wsj()
 
 ```
 
@@ -76,11 +93,20 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+I lowered the transparency to aid with distinguishing nearby data points, which is especially important on smaller displays of this figure. Instead of color coding the treatment groups, I assigned different shapes to them. Lastly I color coded body length for aesthetic purposes. This does not improve information density, it just looks nice. 
+
 ```{r}
 ####
 #03#
 ####
 #your code here
+Tadpoles %>%
+  ggplot(aes(x = Body, y = GutLength, color = Body)) +
+  geom_point(width = .2, size = 3, aes(shape = Treatment), size = 2, alpha = .5) +
+  ylab("Length of Intestine") + xlab("Length of Body") +
+  labs(title = "Intestinal Length Relative to Body Length") +
+  theme_stata()
+  
 
 ```
 
@@ -92,11 +118,32 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+I made three separate boxplots because I didn't feel like transforming my data into a data.frame. On the plus side, I can see which of the themes I prefer for displaying boxplots like this. For all boxplots, each box represents the treatment group while the y axis represents the various measures of tadpole vigour. Mean body and intestine length are higher in the control group while damage to the mouth (e.g. missing teeth, lesions) is higher in the chytrid group, as expected. Who knew that infecting frogs with chytrid fungus was bad for them?
+
 ```{r}
 ####
 #04#
 ####
 #your code here
+#dataFrameTadpoles <- data.frame(Tadpoles)
+#dataFrameTadpolesLong <- melt(dataFrameTadpoles, id_vars=c("Body", "GutLength", "MouthpartDamage"), value_vars=c())
+Tadpoles %>%
+  ggplot(aes(x = Treatment, y = GutLength)) +
+  geom_boxplot(width = .5) +
+  theme_economist_white()+
+  labs(title = "Intestinal Length in Chytrid vs Control")
+
+Tadpoles %>%
+  ggplot(aes(x = Treatment, y = Body)) +
+  geom_boxplot(width = .5) +
+  theme_dark()+
+  labs(title = "Body Length in Chytrid vs Control")
+  
+Tadpoles %>%
+  ggplot(aes(x = Treatment, y = MouthpartDamage)) +
+  geom_boxplot(width = .5) +
+  theme_bw()+
+  labs(title = "Damage to the Mouth in Chytrid vs Control")
 
 ```
 
@@ -108,11 +155,34 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+I added transparent data points to the boxplots. This is much more informative about the distribution of individual tadpole data points than the bare boxplots. Again, each boxplot displays health metrics by treatment group. 
+
 ```{r}
 ####
 #05#
 ####
 #your code here
+Tadpoles %>%
+  ggplot(aes(x = Treatment, y = GutLength)) +
+  geom_boxplot(width = .5) +
+  geom_jitter(width = .2, height = 0, alpha = .5, size = 4) +
+  labs(title = "Intestinal Length in Chytrid vs Control") +
+  theme_excel_new()
+
+Tadpoles %>%
+  ggplot(aes(x = Treatment, y = Body)) +
+  geom_boxplot(width = .5) +
+  geom_jitter(width = .2, height = 0, alpha = .5, size = 4)+
+  labs(title = "Body Length in Chytrid vs Control") +
+  theme_foundation()
+  
+Tadpoles %>%
+  ggplot(aes(x = Treatment, y = MouthpartDamage)) +
+  geom_boxplot(width = .5) +
+  geom_jitter(width = .2, height = 0, alpha = .5, size = 4)+
+  labs(title = "Damage to the Mouth in Chytrid vs Control") +
+  theme_light()
+
 
 ```
 
@@ -122,11 +192,23 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+Honestly, there wasn't much I could do with coordinate_cartesian to make this graph look better. The functions don't serve this graph much. I did fiddle with boundaries for the graph by turning off the default "expand" but if it was beneficial, it was pretty marginal. I might have use for this on other datasets. 
+
 ```{r}
 ####
 #06#
 ####
 #your code here
+Tadpoles %>%
+  ggplot(aes(x = Body, y = MouthpartDamage, color = Body)) +
+  geom_point(width = .2, size = 3, aes(shape = Treatment), size = 2, alpha = .5) +
+  ylab("Degree of Mouth Damage") + xlab("Length of Body") +
+  scale_x_continuous(breaks = c(seq(0, 30, 1)), limits = c(16.5, 26.5)) + 
+  scale_y_continuous(limits = c(0,1)) +
+  coord_cartesian(expand = FALSE) +
+  labs(title = "Attempt at Showing All Four Variables at Once") +
+  theme_solarized()
+
 
 ```
 
@@ -138,10 +220,20 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+I faceted a couple scatterplots by treatment group rather than color or shape coding the treatments. This makes comparison between the two treatments much more difficult in my opinion. Maybe it's my choice of explanatory and experimental variables, but the scatterplots here don't tell me much about differences between these groups. I rather expected intestinal length and mouth damage to be inversely correlated. Maybe a quality of fit test would be informative here if these trends are meaningful. 
+
 ```{r}
 #07#
 ####
 #your code here
+Tadpoles %>%
+  ggplot(aes(x = GutLength, y = MouthpartDamage)) +
+  geom_point(width = .2, size = 3, aes(), size = 2, alpha = .5) +
+  ylab("Degree of Mouth Damage") + xlab("Intestine Length") +
+  facet_wrap(~Treatment, ncol = 2) +
+  geom_smooth(method = lm, se = FALSE) +
+  labs(title = "Intestinal Length Relative to Mouth Damage by Treatment Group") +
+  theme_economist()
 
 ```
 
@@ -151,10 +243,22 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+I used color scaling to cram tadpole body length onto my figure here. It looks ugly. I definitely don't want to do the early 2000's thing of 3d graphs representing multivariate data, but compared to this mess, a 3d graph might be better. 
+
 ```{r}
 #08#
 ####
 #your code here
+Tadpoles %>%
+  ggplot(aes(x = GutLength, y = MouthpartDamage, color = Body)) +
+  geom_point(width = .2, size = 3, aes(), size = 2, alpha = .5) +
+  ylab("Degree of Mouth Damage") + xlab("Intestine Length") +
+  facet_wrap(~Treatment, ncol = 2) +
+  facet_wrap(~factor(Treatment, levels=c("Control", "Bd"))) +
+  geom_smooth(method = lm, se = FALSE) +
+  labs(title = "Health Metrics by Treatment Group") +
+  theme_hc()
+
 
 ```
 
@@ -166,11 +270,21 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+I made some atrocious violin plots. These things are becoming more popular in publications, and looking at this data, a violin plot is completely inappropriate to display my data. Were there more data points with longer distribution tails, violin plots might look good. This is one case where boxplots are superior. As per usual, chytrid infection shortens tadpole intestine. 
+
 ```{r}
 ####
 #09#
 ####
 #your code here 
+
+ggplot(data = Tadpoles, aes(x = Treatment, y = GutLength, color = Treatment)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75), scale = "width", aes()) +
+  geom_jitter(width = .2, height = 0, alpha = .5, size = 4) +
+  ylab("Length of Intestine") + xlab("Chytrid or Control") +
+  labs(title = "Hellish, Sinful Violin Plots") +
+  theme_dark()
+
 ```
 
 # 10. Make a Plot Using a ggplot Extension That Was Not Covered in Class. Explain what the extension does. (4pts)
@@ -179,11 +293,18 @@ Description and Interpretation:
 
 Description and Interpretation:
 
+I found this data cluster outlining extension, geom_point_trace, and while it doesn't suit the tadpole data at all, it could be useful for data which clusters strongly. Were these data more tightly clustered, with data points overlapping in the treatment vs control cluster, a scatterplot with varying alpha may become cluttered fast. This outlining function allows you to draw a linear border around your data points, clumping them into a continuous shape which covers the cluster of measurements common to that group. This could be aesthetically pleasing and informative. 
+
 ```{r}
 ####
 #10#
 ####
 #your code here 
+ggplot(data = Tadpoles, aes(x = Body, y = GutLength, color = Treatment)) +
+  geom_point_trace(size = 15, fill = "white") +
+  theme_wsj() +
+  labs(title = "Outlined Data Clusters")
+
 ```
 
 ******

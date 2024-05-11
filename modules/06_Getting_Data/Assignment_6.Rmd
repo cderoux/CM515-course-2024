@@ -1,6 +1,6 @@
 ---
 title: "Getting Data and Databases - HW"
-author: "Jessica Hill"
+author: "Chris deRoux"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -60,7 +60,8 @@ Now read your file in.
 library(ShortRead)
 
 # this is just an example of what I did. You will have to modify the path for your specific data. 
-seq1 <- readFastq("./seq_data/SRR27190540.fastq.gz", pattern=character(0))
+#seq1 <- readFastq("./seq_data/SRR27190540.fastq.gz", pattern=character(0))
+seq1 <- readFastq("C:/Users/Chris/Documents/CM515-course-2024/modules/06_Getting_Data/SRR27781080.fastq(1).gz", pattern=character(0))
 
 # returns sequence information 
 sread(seq1) 
@@ -76,7 +77,7 @@ go ahead and read in another sample file or two from the same BioProject. You ca
 ```{r}
 # again these file names are just examples of what i did, you will have to modify the paths. 
 
-seq2 <- readFastq("./seq_data/SRR27190541.fastq.gz", pattern=character(0))
+seq2 <- readFastq("C:/Users/Chris/Documents/CM515-course-2024/modules/06_Getting_Data/SRR27781081.fastq.gz", pattern=character(0))
 ```
 
 ---
@@ -102,14 +103,19 @@ summary(seq2)
 ```{r}
 # Performs qualtiy assessment no short reads
 
-qa_data <- qa("./seq_data/", pattern=character(0), type="fastq") # this will output some information about your data
-print(qa_data)
+qa_data <- qa(seq1, lane=character(1), type="fastq")
+# this will output some information about your data
+qa_data2 <- qa(seq2, lane=character(1), type="fastq")
+c(qa_data, qa_data2)
+
 ```
 
 Are there any interesting things about your data files that you see?
 
 ```
 put your comments here:
+Doing some quick back of the envelope calculation, the GC content of the root sample transcripts is 44.7%, while that of the leaf sample transcripts is 45.1%. This is surprisingly low for sequences which are by definition all coding sequences. This could indicate that AT bias is a much stronger ratchet than I thought, or perhaps flanking sequences like poly A tails are being sequenced by Trinity. 
+The read quality score for the root samples appears lower than those of the leaf samples, while the read density is similar. I work with an assembled transcriptome of this species, so going forward I will keep in mind that differential expression between root and leaf associated genes may be difficult to interpret granted the differences in raw read quality. I also must wonder whether root transcriptomes are intriniscally problematic due to the abundance of stymbiotic organisms associated with the roots of all plants but the roots of hemiparasitic Epipogium in specific. Hmm. 
 
 ```
 
@@ -136,7 +142,11 @@ Finally, do the same for one **specialized database** type.
 
 ```
 Place your responses here:
+I use Genbank regularly to download assembled annotated genomes and SRAs in case assemblies and annotations are unavailable. This data is core to my project, as the short duration of my degree does not allow for de novo sequencing and assembly of plant genomes, unfortunately. 
 
+Now that I know about it, Interpro will be key to my research going forward. My project involves studying evolutionary rate covariation between plant genes in the same genome and between genes in different genomes. The point is to characterize functional differences between parasitic plants and their nearest autotrophic relatives. Seeing as parasites are universally poorly characterized, I will be relying on Gene Ontology for functional characterizations of ERC hits, alongside comparisons to the model plant Arabidopsis whose genome is thoroughly annotated. With a database like Interpro, I can compare strong ERC signals of unknown function to similar protein sequences/motifs and go some way towards characterizing my hits. 
+
+Even more specifically than that, KEGG's PATHWAY database would fit my project perfectly. Seeing as the transition from autotroph to parasite involves a wholesale rearrangement of the organism's metabolism, I expect many of my ERC hits to be involved in metabolic pathways. I expect my data to represent a crude interactome of the functional products of various protein coding genes, so having this database available with so much information on metabolic pathways and other systems should prove very helpful. 
 
 ```
 
@@ -154,6 +164,22 @@ Describe what the function does or how it can be used.
 
 Give a functional example of its use. I want to try it too. 
 
+I chose two functions which trim low quality tails from raw reads, as a basic step in SRA processing. I've never tried this in R so this is a first for me. trimTailw uses a sliding window frame to decide where to trim read tails, while trimTails tallies up nucleotides falling below a specified quality and trims once enough poor quality nucleotides accumulate. 
+
+I define a few variables here to store the trimmed ShortReadQ objects. It looks like, granted the parameters I set, trimTailw pruned more data from the SRA than trimTails. Without further investigation into the kind of trimming done, I'm not sure which method is more appropriate. It's nice to see that R can do this on its own, with fairly minimal impact on my local system memory given the size of my SRAs. Both methods take a trivial amount of time. 
+
+```{r}
+
+seq1TrimW <- trimTailw(seq1, 1, 1, halfwidth = 5)
+
+print(seq1TrimW)
+
+seq1TrimS <- trimTails(seq1, 1, 1)
+
+print(seq1TrimS)
+
+```
+
 Also provide a link to some documentation describing this function. The **[NAME](url)** notation is used for creating a hyperlink. You can provide the link below by filling in the syntax: 
 
-[Your website here]()
+**[Bioconductor](https://bioconductor.org/packages/release/bioc/html/ShortRead.html)**

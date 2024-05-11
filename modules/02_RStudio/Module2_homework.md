@@ -18,9 +18,30 @@
 
 A. Answer the following: **What is your field of research?** You can use a rotation project or in-lab project. If you don't have a designated field of research, what is a field you would like to move into in the future?
 
+I work in systematics. It's the study of evolutionary relationships between biological information units, be they point mutations, genes, genomes, species, or higher taxa. I have a particular interest in parasite systematics, as they're incredibly challenging for modern methods to deal with, exposing problems with the field as a whole. 
+
 B. Think about the research you would like to do. Use the [Bioconductor Website](https://www.bioconductor.org/) to explore topics that are relevant to you. Answer the following: **What are the names and url's of 2 - 3 packages you would be interested to learn more about?**
 
+GO.db
+https://www.bioconductor.org/packages/release/data/annotation/html/GO.db.html
+
+This package performs gene ontology analyses on datasets just like the one's I've generated for my current project on parasitic plants. 
+
+BUS
+https://www.bioconductor.org/packages/release/bioc/html/BUS.html
+
+BUS estimates the interactions between macromolecules and genes, which could be useful for analyzing my gene similarity matrices. Could also come in handy once I get my hands on existing protein structures of these genes' products, or reconstruct protein structures for uncharacterized genes I find. 
+
+RCy3
+https://www.bioconductor.org/packages/release/bioc/html/RCy3.html
+
+This is just a network display package which could be useful for displaying the interactome of gene coevolution I hope to reconstruct. 
+
 C. Evaluate the documentation your packages have available. Compare the documentation between the 2 - 3 packages you selected. Answer: **Which packages appear easier to learn and why?**
+
+RCy3 wouldn't talke long to learn at all. It's just a graphical display package. I imagine most of the headaches would have to do with my data structure and commands which call various functions in RCy3. Once I make all the easy mistakes, it should be simple to plug along. 
+Gene ontology would be pretty easy to learn since many of my colleagues have done it and could lend me a hand. 
+BUS looks completely foreign to me, and the documentation doesn't look very extensive. 
 
 ## QUESTION 2 (5 pts)
 
@@ -30,11 +51,19 @@ C. Evaluate the documentation your packages have available. Compare the document
 
 A. What happens when you press **Alt+Shift+K** on a PC/Linux or **Option+Shift+K** on a Mac?
 
+It brings up an overlay of the keyboard shortcut guide. 
+
 B. What happens when you are working on the "Console" and you press the **up arrow**?
+
+It loads the previously entered console command to the current line. 
 
 C. What happens when you are working on the "Console" and you press **CTRL+L**?
 
+This clears the console but preserves previously entered commands for recovery via the up arrow. 
+
 D. What shortcut key helps you escape out of an executed command on the "Console"? For example, try executing a sleep function. This puts R to sleep for 5 minutes. (in other words - What would you press to return to the prompt before 5 minutes is complete?)
+
+Ctrl-C
 
 ```r
 Sys.sleep(5)
@@ -55,13 +84,16 @@ Sys.sleep(5)
 A. What are the classes of each of these vectors? 
 ```r
 users <- c("alvin", "viet", "leila")
+class(users)
 logins <- c(12, 5, 34)
+class(logins)
 ```
 
 B. If we merge these vectors together into super_vector by concatenating them together (below), what is the class of super\_vector? Why do you think this happened?
 
 ```r
 super_vector <- c(users, logins)
+class(super_vector)
 ```
 
 C. How would you force super\_vector into a numeric sub-class? *write the line of code* What happens? *copy the output and write a sentence explanation*
